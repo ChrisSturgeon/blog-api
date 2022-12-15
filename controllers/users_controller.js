@@ -4,10 +4,10 @@ const app = require('../app');
 const { body, validationResult, check } = require('express-validator');
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
+require('dotenv').config();
 
 // Passport
 const passport = require('passport');
-const e = require('express');
 
 // Login on GET
 exports.login_get = (req, res) => {
@@ -24,11 +24,22 @@ exports.login_post = async (req, res) => {
     // User present so compare passwords
     if (found_user) {
       bcrypt.compare(password, found_user.password, function (err, data) {
+        // Handle any error
         if (err) {
           console.log(err);
         }
+        // Passwords match so issue JWT
         if (data) {
-          res.send('Success!');
+          const options = {
+            expiresIn: '1m',
+          };
+          const secret = process.env.JWT_SECRET;
+          const token = jwt.sign({ sub: found_user._id }, secret, options);
+          return res.status(200).json({
+            message: 'Auth Passed',
+            token,
+          });
+          // Passwords do not match so send error
         } else {
           res.send('Incorrect password');
         }
@@ -39,58 +50,6 @@ exports.login_post = async (req, res) => {
   } catch (err) {
     res.send(err);
   }
-
-  // console.log(req.body.user);
-
-  // console.log(password);
-  // console.log(username);
-
-  // User.findOne({ username: user }).exec((err, found_user) => {
-  //   if (err) {
-  //     res.send(err);
-  //   }
-
-  //   if (found_user) {
-  //     res.json(found_user);
-  //   } else {
-  //     res.send('No user found!');
-  //   }
-  // });
-
-  // Check if user exists in database
-
-  // User.findOne({ username: username }).exec((err, found_user) => {
-  //   if (err) {
-  //     return next(err);
-  //   } else {
-  //     if (found_user.password === password) {
-  //       const options = {
-  //         expiresIn: '30s',
-  //       };
-  //       const secret = 'SECRET_KEY';
-  //       const token = jwt.sign({ email }, secret, options);
-  //       return res.status(200).json({
-  //         message: 'Auth Passed',
-  //         token,
-  //       });
-  //     } else {
-  //       return next(err);
-  //     }
-  //   }
-  // });
-
-  // if (email === 'sturgeon.chris@gmail.com') {
-  //   if (password === 'hello') {
-  //   } else {
-  //     return res
-  //       .status(401)
-  //       .json({ message: 'Auth Failed - Invalid Password' });
-  //   }
-  // } else {
-  //   return res
-  //     .status(401)
-  //     .json({ message: 'Auth Failed - User does not exist' });
-  // }
 };
 
 exports.protected = [
@@ -108,7 +67,6 @@ exports.user_create_post = [
   body('password', 'Password required').trim().isLength({ min: 1 }).escape(),
 
   // Process the request
-
   (req, res, next) => {
     const errors = validationResult(req);
 
