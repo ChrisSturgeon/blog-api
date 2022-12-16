@@ -1,6 +1,4 @@
-const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
-const app = require('../app');
 const { body, validationResult, check } = require('express-validator');
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
@@ -31,7 +29,7 @@ exports.login_post = async (req, res) => {
         // Passwords match so issue JWT
         if (data) {
           const options = {
-            expiresIn: '1m',
+            expiresIn: '1h',
           };
           const secret = process.env.JWT_SECRET;
           const token = jwt.sign({ sub: found_user._id }, secret, options);

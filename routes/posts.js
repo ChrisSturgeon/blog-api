@@ -22,4 +22,15 @@ router.post(
   posts_controller.post_create_post
 );
 
+// Delete blog post on POST
+router.post(
+  '/:postId/delete',
+  passport.authenticate('jwt', { session: false }),
+  posts_controller.post_delete
+);
+
+// Update a blog post on PUT
+
+router.put('/:postId', posts_controller.post_update);
+
 module.exports = router;
