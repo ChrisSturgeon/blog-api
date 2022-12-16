@@ -16,7 +16,7 @@ exports.login_get = (req, res) => {
 
 // Login on POST
 exports.login_post = async (req, res) => {
-  // Destructure username from request body
+  // Destructure username and pasword from request body
   const { user, password } = req.body;
 
   try {
@@ -26,7 +26,7 @@ exports.login_post = async (req, res) => {
       bcrypt.compare(password, found_user.password, function (err, data) {
         // Handle any error
         if (err) {
-          console.log(err);
+          return next(err);
         }
         // Passwords match so issue JWT
         if (data) {
@@ -48,10 +48,11 @@ exports.login_post = async (req, res) => {
       res.send('No user found');
     }
   } catch (err) {
-    res.send(err);
+    return next(err);
   }
 };
 
+// TODO - Delete this
 exports.protected = [
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
@@ -59,8 +60,7 @@ exports.protected = [
   },
 ];
 
-// Register on POST
-
+// Register user on POST
 exports.user_create_post = [
   // Sanitise inputs
   body('username', 'Username required').trim().isLength({ min: 1 }).escape(),
@@ -77,7 +77,7 @@ exports.user_create_post = [
         if (err) {
           return next(err);
         }
-
+        // Create new user object and save in database
         const user = new User({
           username: req.body.username,
           password: hashedPassword,

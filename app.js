@@ -19,6 +19,7 @@ const bcrypt = require('bcryptjs');
 // Routers
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
+const postsRouter = require('./routes/posts');
 
 // MongoDB
 const mongoDb = process.env.MONGODB_URI;
@@ -48,6 +49,7 @@ passport.use(JwtStrategy);
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/posts', postsRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
