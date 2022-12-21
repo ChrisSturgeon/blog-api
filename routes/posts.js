@@ -4,7 +4,7 @@ const posts_controller = require('../controllers/posts_controller');
 const passport = require('passport');
 
 // All posts as JSON on GET
-router.get('/all', posts_controller.posts_all);
+router.get('/all', posts_controller.posts_all_summary);
 
 // Individual post as JSON on GET
 router.get('/:postId', posts_controller.get_post);
@@ -30,7 +30,6 @@ router.post(
 );
 
 // Update a blog post on PUT
-
 router.put('/:postId', posts_controller.post_update);
 
 module.exports = router;

@@ -10,9 +10,12 @@ const errorFormatter = ({ location, msg, param, value, nestedErrors }) => {
 };
 
 // Returns all published posts as array in JSON with most recent first
-exports.posts_all = async (req, res, next) => {
+exports.posts_all_summary = async (req, res, next) => {
   try {
-    const allPosts = await Post.find({ published: true }).sort({ posted: -1 });
+    const allPosts = await Post.find(
+      { published: true },
+      'title summary posted'
+    ).sort({ posted: -1 });
     res.json({
       posts: allPosts,
     });
@@ -33,10 +36,12 @@ exports.get_post = async (req, res, next) => {
   }
 };
 
-// Returns comments for given post as JSON on GET
+// Returns comments with most recent first for given post as JSON on GET
 exports.get_comments = async (req, res, next) => {
   try {
-    const comments = await Comment.find({ postRef: req.params.postId });
+    const comments = await Comment.find({ postRef: req.params.postId }).sort({
+      posted: -1,
+    });
 
     if (comments) {
       res.json(comments);
@@ -49,34 +54,45 @@ exports.get_comments = async (req, res, next) => {
 };
 
 // Creates blog-post on POST
+// Escaping body was removed because it's disrupting the conversion to markdown
 exports.post_create_post = [
   // Validate the inputs
   body('title')
     .isLength({ min: 1 })
-    .withMessage('Title must be at least 1 character')
+    .withMessage('Title required')
     .isLength({ max: 200 })
     .withMessage('Title must be less than 200 characters')
+    .trim()
+    .escape(),
+
+  body('summary')
+    .isLength({ min: 1 })
+    .withMessage('Summary required')
+    .isLength({ max: 250 })
+    .withMessage('Summary exceeds maximum of 250 characters')
     .trim()
     .escape(),
 
   body('content')
     .isLength({ min: 1 })
     .withMessage('Content must be at least 1 character')
-    .isLength({ max: 200 })
-    .withMessage('Title must be less than 20,000 characters')
-    .trim()
-    .escape(),
+    .isLength({ max: 20000 })
+    .withMessage('Title must be less than 20,000 characters'),
+  // .trim(),
+  // .escape(),
 
   async (req, res, next) => {
     const validationErrors = validationResult(req).formatWith(errorFormatter);
 
     if (!validationErrors.isEmpty()) {
       res.status(401).json(validationErrors);
+      return;
     }
 
     try {
       const post = new Post({
         title: req.body.title,
+        summary: req.body.summary,
         content: req.body.content,
         posted: new Date(),
         published: req.body.published,
@@ -95,7 +111,7 @@ exports.create_comment = [
   // Validate and santise inputs
   body('content')
     .isLength({ min: 1 })
-    .withMessage('Comment text missing')
+    .withMessage('Comment text required')
     .isLength({ max: 3000 })
     .withMessage('Exceeds size is 5000 characters')
     .trim()
@@ -111,7 +127,7 @@ exports.create_comment = [
     const validationErrors = validationResult(req).formatWith(errorFormatter);
 
     if (!validationErrors.isEmpty()) {
-      res.status(401).json(validationErrors);
+      res.status(400).json(validationErrors);
     }
 
     try {
@@ -167,11 +183,19 @@ exports.post_update = [
     .trim()
     .escape(),
 
+  body('summary')
+    .isLength({ min: 1 })
+    .withMessage('Summary required')
+    .isLength({ max: 250 })
+    .withMessage('Summary exceeds maximum of 250 characters')
+    .trim()
+    .escape(),
+
   body('content')
     .isLength({ min: 1 })
     .withMessage('Content must be at least 1 character')
-    .isLength({ max: 200 })
-    .withMessage('Title must be less than 20,000 characters')
+    .isLength({ max: 20000 })
+    .withMessage('Content text must be less than 20,000 characters')
     .trim()
     .escape(),
 
@@ -185,6 +209,7 @@ exports.post_update = [
     try {
       const post = new Post({
         title: req.body.title,
+        summary: req.body.summary,
         content: req.body.content,
         posted: new Date(),
         published: req.body.published,
