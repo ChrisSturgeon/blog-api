@@ -7,15 +7,16 @@ const logger = require('morgan');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const compression = require('compression');
 
 // Security imports
-
 require('dotenv').config();
 const JwtStrategy = require('./jwt');
 const passport = require('passport');
 
 // Authentication & Security imports
 const bcrypt = require('bcryptjs');
+const helmet = require('helmet');
 
 // Routers
 const indexRouter = require('./routes/index');
@@ -36,6 +37,8 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
 // Application-level middleware
+app.use(helmet());
+app.use(compression());
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());

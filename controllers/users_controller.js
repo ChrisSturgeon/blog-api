@@ -63,9 +63,13 @@ exports.user_create_post = [
   // Sanitise inputs
   body('username', 'Username required').trim().isLength({ min: 1 }).escape(),
   body('password', 'Password required').trim().isLength({ min: 1 }).escape(),
+  body('secret').trim().escape(),
 
   // Process the request
   (req, res, next) => {
+    if (req.body.secret !== process.env.REGISTER_KEY) {
+      res.send('Access Denied');
+    }
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
