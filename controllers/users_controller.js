@@ -68,30 +68,32 @@ exports.user_create_post = [
   // Process the request
   (req, res, next) => {
     if (req.body.secret !== process.env.REGISTER_KEY) {
-      res.send('Access Denied');
-    }
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      res.send(errors.array());
+      res.status(403).send('Access Denied');
+      return;
     } else {
-      bcrypt.hash(req.body.password, 10, (err, hashedPassword) => {
-        if (err) {
-          return next(err);
-        }
-        // Create new user object and save in database
-        const user = new User({
-          username: req.body.username,
-          password: hashedPassword,
-          joined: new Date(),
-          posts: [],
-        }).save((err) => {
+      const errors = validationResult(req);
+
+      if (!errors.isEmpty()) {
+        res.send(errors.array());
+      } else {
+        bcrypt.hash(req.body.password, 10, (err, hashedPassword) => {
           if (err) {
             return next(err);
           }
-          res.send('User successfully created in database');
+          // Create new user object and save in database
+          const user = new User({
+            username: req.body.username,
+            password: hashedPassword,
+            joined: new Date(),
+            posts: [],
+          }).save((err) => {
+            if (err) {
+              return next(err);
+            }
+            res.send('User successfully created in database');
+          });
         });
-      });
+      }
     }
   },
 ];
