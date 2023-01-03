@@ -24,6 +24,18 @@ exports.posts_all_summary = async (req, res, next) => {
   }
 };
 
+// Returns 10 most recent posts as JSON with most recent first
+exports.get_recent = async (req, res, next) => {
+  try {
+    const recentPosts = await Post.find( {published: true}).sort({posted: -1 }).limit(10)
+    res.json({
+      posts: recentPosts,
+    })
+  } catch(err) {
+    return next(err)
+  }
+}
+
 // Returns JSON of individual post
 exports.get_post = async (req, res, next) => {
   try {

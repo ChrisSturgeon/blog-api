@@ -6,6 +6,9 @@ const passport = require('passport');
 // All posts as JSON on GET
 router.get('/all', posts_controller.posts_all_summary);
 
+// 10 Most Recent Posts on GET
+router.get('/recent', posts_controller.get_recent)
+
 // Individual post as JSON on GET
 router.get('/:postId', posts_controller.get_post);
 
