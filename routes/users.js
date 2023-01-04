@@ -3,7 +3,6 @@ var router = express.Router();
 const user_controller = require('../controllers/users_controller');
 const user = require('../models/user');
 
-/* GET users listing. */
 router.get('/', function (req, res, next) {
   res.send('This is the users route');
 });
@@ -11,8 +10,6 @@ router.get('/', function (req, res, next) {
 router.get('/login', user_controller.login_get);
 
 router.post('/login', user_controller.login_post);
-
-router.get('/protected', user_controller.protected);
 
 router.post('/register', user_controller.user_create_post);
 

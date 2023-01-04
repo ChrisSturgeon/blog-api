@@ -1,11 +1,8 @@
 const jwt = require('jsonwebtoken');
-const { body, validationResult, check } = require('express-validator');
+const { body, validationResult } = require('express-validator');
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
-
-// Passport
-const passport = require('passport');
 
 // Login on GET
 exports.login_get = (req, res) => {
@@ -39,24 +36,16 @@ exports.login_post = async (req, res) => {
           });
           // Passwords do not match so send error
         } else {
-          res.send('Incorrect password');
+          res.status(403).send('Incorrect password');
         }
       });
     } else {
-      res.send('No user found');
+      res.status(404).send('No user found');
     }
   } catch (err) {
     return next(err);
   }
 };
-
-// TODO - Delete this
-exports.protected = [
-  passport.authenticate('jwt', { session: false }),
-  (req, res) => {
-    return res.status(200).send('Yay! This is a protected route');
-  },
-];
 
 // Register user on POST
 exports.user_create_post = [
@@ -65,7 +54,7 @@ exports.user_create_post = [
   body('password', 'Password required').trim().isLength({ min: 1 }).escape(),
   body('secret').trim().escape(),
 
-  // Process the request
+  // Process the request checking user knows secret password
   (req, res, next) => {
     if (req.body.secret !== process.env.REGISTER_KEY) {
       res.status(403).send('Access Denied');
@@ -90,7 +79,7 @@ exports.user_create_post = [
             if (err) {
               return next(err);
             }
-            res.send('User successfully created in database');
+            res.status(200).send('User successfully created in database');
           });
         });
       }

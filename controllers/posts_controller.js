@@ -1,9 +1,8 @@
-const { body, validationResult, check } = require('express-validator');
+const { body, validationResult } = require('express-validator');
 const Post = require('../models/post');
 const Comment = require('../models/comment');
-const e = require('express');
-const { reset } = require('nodemon');
 
+// Formats errors to return to form
 const errorFormatter = ({ location, msg, param, value, nestedErrors }) => {
   // Build your resulting errors however you want! String, object, whatever - it works!
   return `${location}[${param}]: ${msg}`;
@@ -16,7 +15,7 @@ exports.posts_all_summary = async (req, res, next) => {
       { published: true },
       'title summary posted'
     ).sort({ posted: -1 });
-    res.json({
+    res.status(200).json({
       posts: allPosts,
     });
   } catch (err) {
@@ -27,20 +26,22 @@ exports.posts_all_summary = async (req, res, next) => {
 // Returns 10 most recent posts as JSON with most recent first
 exports.get_recent = async (req, res, next) => {
   try {
-    const recentPosts = await Post.find( {published: true}).sort({posted: -1 }).limit(10)
-    res.json({
+    const recentPosts = await Post.find({ published: true })
+      .sort({ posted: -1 })
+      .limit(10);
+    res.status(200).json({
       posts: recentPosts,
-    })
-  } catch(err) {
-    return next(err)
+    });
+  } catch (err) {
+    return next(err);
   }
-}
+};
 
 // Returns JSON of individual post
 exports.get_post = async (req, res, next) => {
   try {
     const post = await Post.findById(req.params.postId);
-    res.json({
+    res.status(200).json({
       post: post,
     });
   } catch (err) {
@@ -56,9 +57,9 @@ exports.get_comments = async (req, res, next) => {
     });
 
     if (comments) {
-      res.json(comments);
+      res.status(200).json(comments);
     } else {
-      res.send('There are no comments for this post');
+      res.status(404).send('There are no comments for this post');
     }
   } catch (err) {
     return next(err);
@@ -90,8 +91,6 @@ exports.post_create_post = [
     .withMessage('Content must be at least 1 character')
     .isLength({ max: 20000 })
     .withMessage('Title must be less than 20,000 characters'),
-  // .trim(),
-  // .escape(),
 
   async (req, res, next) => {
     const validationErrors = validationResult(req).formatWith(errorFormatter);
@@ -172,7 +171,7 @@ exports.post_delete = async (req, res, next) => {
 
     if (post) {
       await Post.findByIdAndRemove(req.params.postId);
-      res.json({
+      res.status(200).json({
         message: `Post ${req.params.postId} successfully deleted`,
       });
     } else {
