@@ -39,7 +39,11 @@ app.set('view engine', 'pug');
 // Application-level middleware
 app.use(helmet());
 app.use(compression());
-app.use(cors());
+app.use(
+  cors({
+    origin: 'https://www.chrissturgeon.co.uk',
+  })
+);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
