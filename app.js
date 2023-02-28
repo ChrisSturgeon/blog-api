@@ -42,6 +42,7 @@ app.use(compression());
 app.use(
   cors({
     origin: 'https://www.chrissturgeon.co.uk',
+    origin: 'http://www.chrissturgeon.co.uk',
   })
 );
 app.use(bodyParser.urlencoded({ extended: false }));
